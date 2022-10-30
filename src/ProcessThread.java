@@ -3,15 +3,32 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ProcessThread extends Thread {
     
     private int start;
     private int batchSize;
-    private ArrayList<String> yearsList = new ArrayList<>();
+    private ArrayList<Year> yearsList = new ArrayList<>();
     private final int K;
+//    private final String splitWordRegex = "[\s(.,;)]+";
+//    \d+
+private final String splitWordRegex = "\\W+";
+    HashMap<String, Integer> smallWordsCountMap = new HashMap<>();
 
-    public ProcessThread(int start, int batchSize, ArrayList<String> yearsList, int K) {
+    public HashMap<String, Integer> getSmallWordsCountMap() {
+        return smallWordsCountMap;
+    }
+
+    private String getSplitWordRegex() {
+        return splitWordRegex;
+    }
+
+    public ArrayList<Year> getYearsList() {
+        return yearsList;
+    }
+
+    public ProcessThread(int start, int batchSize, ArrayList<Year> yearsList, int K) {
         this.start = start;
         this.batchSize = batchSize;
         this.yearsList = yearsList;
@@ -20,18 +37,19 @@ public class ProcessThread extends Thread {
 
     @Override
     public void run() {
-        System.err.println(getName() + "START: " + start + ", FINISH: " + (start + this.batchSize));
+        System.out.println(getName() + "START: " + start + ", FINISH: " + (start + this.batchSize));
         for (int i = start; i < (start + this.batchSize); i++) {
             for (int j = 0; j < K; j++) {
                 String result = makeApiCall(yearsList.get(i));
-                System.out.println(getName() + " , Result: " + result);
+//                System.out.println(getName() + " , Result: " + result);
             }
         }
         System.out.println(getName() + " finished.");
     }
 
-    private static String makeApiCall(String year) {
-        final String API_URL = "http://numbersapi.com/" + year + "/year";
+    private String makeApiCall(Year year) {
+        final String API_URL = "http://numbersapi.com/" + year.getYearString() + "/year";
+
         StringBuilder result = new StringBuilder();
         try {
 
@@ -44,6 +62,19 @@ public class ProcessThread extends Thread {
                 result.append(" ");
             }
             in.close();
+//           TODO: Gia to prwto zitoumeno
+            String[] words = result.toString().toLowerCase().split(getSplitWordRegex());
+            for (String word: words) {
+                if (word.length() < 4) {
+                    int wordCount = 1;
+                    if (smallWordsCountMap.containsKey(word)) {
+                        wordCount = smallWordsCountMap.get(word) + 1;
+                    }
+                    smallWordsCountMap.put(word, wordCount);
+                }
+            }
+//            TODO: Gia to deutero zitoumeno
+            year.addTextMessage(new TextMessage(result.toString(), words.length));
         } catch (IOException e) {
             e.printStackTrace();
         }
