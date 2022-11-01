@@ -7,6 +7,7 @@ public class TextMessage {
         this.textMessageWordSize = textMessageWordSize;
     }
 
+//    Return the text message word size
     public int getTextMessageWordSize() {
         return textMessageWordSize;
     }
