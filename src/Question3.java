@@ -56,15 +56,33 @@ public class Question3 {
             }
         }
 
-//      Find the year with more words by average
-        Year maxYear = yearsList.get(0);    //At the first year as max to compare with the others
+//      Merge HashMap and ArrayList
+        yearsListApi.clear();   //Clear the global YearList
         for (ProcessThread thread : threads) {
             mergeWordsMap(thread.getSmallWordsCountMap());  //Merge the years list from all threads
             ArrayList<Year> tempYearList = thread.getYearsList();   //Add temp year list to check for max
-            for (Year year : tempYearList) {
-                if (year.averageWordsTextMessagePerYear() > maxYear.getAverage()) { //If the tempYear is bigger save as max or continue to check
-                    maxYear = year;
+//            Merge Year List
+            for (int i = 0; i < tempYearList.size(); i++) {
+                boolean found = false;  //Track the loop if find the year
+                for (int j = 0; j < yearsListApi.size(); j++) {
+                    if (tempYearList.get(i).getYear() == yearsListApi.get(j).getYear()) {   //Compare if year from thread exists to Global yearList
+                        for (TextMessage t: tempYearList.get(i).getTextMessageList()) { //If exists add one by one the messages
+                            yearsListApi.get(j).addTextMessage(t);
+                        }
+                        found = true;
+                        break;  // Go the next year from the thread list
+                    }
                 }
+                if (!found) {   // If didn't found the tempYear so add to the global year list all the year object
+                    yearsListApi.add(tempYearList.get(i));
+                }
+            }
+        }
+
+        Year maxYear = yearsListApi.get(0);    //At the first year as max to compare with the others
+        for (Year year : yearsListApi) {
+            if (year.averageWordsTextMessagePerYear() > maxYear.getAverage()) { //If the tempYear is bigger save as max or continue to check
+                maxYear = year;
             }
         }
 
