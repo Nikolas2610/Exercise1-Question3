@@ -10,7 +10,11 @@ public class Year {
         this.year = year;
     }
 
-//    Return year
+    public ArrayList<TextMessage> getTextMessageList() {
+        return textMessageList;
+    }
+
+    //    Return year
     public int getYear() {
         return year;
     }
